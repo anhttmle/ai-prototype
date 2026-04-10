@@ -91,7 +91,7 @@ graph TD
 **Hại**: Latency cao hơn, orchestration phức tạp.
 
 ### 3.5 Output Format
-```
+
 ✅ **Programs**: PROG001, PROG002
 🔗 **Call Chain**: MAIN → PROC_A → FUNC_X
 📊 **Data Flow**: INPUT_FILE → PROC_A → OUTPUT_DS  
@@ -100,7 +100,7 @@ graph TD
   PERFORM PROC-A THRU PROC-A-EXIT
   ```
 🎯 **Confidence**: 92% (grounded by 3 snippets)
-```
+
 
 ---
 
