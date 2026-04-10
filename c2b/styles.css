@@ -32,6 +32,12 @@ body {
   background: var(--bg);
 }
 
+/* 日本語プロトタイプ（index_jp.html）用フォント */
+html[lang="ja"] {
+  --font: "IBM Plex Sans JP", "Hiragino Sans", "Hiragino Kaku Gothic ProN",
+    "Yu Gothic UI", "Meiryo", system-ui, sans-serif;
+}
+
 .sr-only {
   position: absolute;
   width: 1px;

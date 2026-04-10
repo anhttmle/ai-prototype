@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>QA — プロトタイプ（日本語）</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app" id="app">
+      <header class="topbar" role="banner">
+        <div class="topbar__brand">
+          <span class="topbar__logo" aria-hidden="true">◈</span>
+          <div>
+            <h1 class="topbar__title">業務に関する質問応答</h1>
+            <p class="topbar__subtitle">
+              質問応答アシスタント（プロトタイプ）
+            </p>
+          </div>
+        </div>
+        <div class="topbar__context">
+          <div class="field-group">
+            <label class="field-label" for="project-select">プロジェクト</label>
+            <select id="project-select" class="select" aria-label="プロジェクトを選択">
+              <option>B2B決済 — Core</option>
+              <option>法人オンボーディング</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="repo-select">リポジトリ</label>
+            <select
+              id="repo-select"
+              class="select"
+              aria-label="リポジトリを選択"
+            >
+              <option>gitlab/acme/payment-service</option>
+              <option>gitlab/acme/payment-docs</option>
+            </select>
+          </div>
+          <div
+            class="index-badge index-badge--ok"
+            id="index-badge"
+            role="status"
+            aria-live="polite"
+          >
+            <span class="index-badge__dot" aria-hidden="true"></span>
+            <span id="index-badge-text">インデックス済み · 2.4k チャンク</span>
+          </div>
+          <button
+            type="button"
+            class="btn btn--ghost btn--small"
+            id="btn-refresh-index"
+            title="インデックス更新をシミュレート"
+          >
+            インデックス更新
+          </button>
+        </div>
+      </header>
+
+      <div class="tabs-mobile" role="tablist" aria-label="表示の切り替え">
+        <button
+          type="button"
+          class="tabs-mobile__tab is-active"
+          role="tab"
+          id="tab-chat"
+          aria-selected="true"
+          aria-controls="panel-chat"
+        >
+          チャット
+        </button>
+        <button
+          type="button"
+          class="tabs-mobile__tab"
+          role="tab"
+          id="tab-sources"
+          aria-selected="false"
+          aria-controls="panel-sources"
+        >
+          引用ソース
+        </button>
+      </div>
+
+      <main class="main" id="main">
+        <section
+          class="panel panel--chat"
+          id="panel-chat"
+          role="tabpanel"
+          aria-labelledby="tab-chat"
+        >
+          <div class="empty-state" id="empty-state" hidden>
+            <div class="empty-state__icon" aria-hidden="true">◇</div>
+            <h2 class="empty-state__title">質問から始めましょう</h2>
+            <p class="empty-state__text">
+              選択したリポジトリ内のドキュメントとコードを検索して回答します。
+              各回答には照合用のソースが付きます。
+            </p>
+            <ul class="empty-state__hints" aria-label="質問の例">
+              <li>
+                <button
+                  type="button"
+                  class="hint-chip"
+                  data-hint="タイムアウト時の返金フローはどのように動きますか？"
+                >
+                  タイムアウト時の返金フローは？
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  class="hint-chip"
+                  data-hint="振込代行APIの作成は誰が呼び出せますか？"
+                >
+                  振込代行APIの作成は誰が呼べますか？
+                </button>
+              </li>
+            </ul>
+          </div>
+
+          <div
+            class="chat-scroll"
+            id="chat-scroll"
+            role="log"
+            aria-label="質問応答の履歴"
+            aria-live="polite"
+          ></div>
+
+          <div class="composer">
+            <div class="composer__toolbar">
+              <div
+                class="composer__control"
+                role="radiogroup"
+                aria-labelledby="composer-mode-legend"
+              >
+                <span class="composer__legend" id="composer-mode-legend">
+                  モード
+                </span>
+                <div class="mode-seg">
+                  <input
+                    type="radio"
+                    name="chat-mode"
+                    id="mode-fast"
+                    class="mode-seg__input"
+                    value="fast"
+                    checked
+                  />
+                  <label
+                    class="mode-seg__label"
+                    for="mode-fast"
+                    title="低遅延優先・推論ステップ少なめ"
+                  >
+                    高速
+                  </label>
+                  <input
+                    type="radio"
+                    name="chat-mode"
+                    id="mode-thinking"
+                    class="mode-seg__input"
+                    value="thinking"
+                  />
+                  <label
+                    class="mode-seg__label"
+                    for="mode-thinking"
+                    title="深い推論・複雑な質問向け"
+                  >
+                    思考
+                  </label>
+                </div>
+              </div>
+              <div class="composer__control composer__control--model">
+                <label class="composer__legend" for="model-select">モデル</label>
+                <select
+                  id="model-select"
+                  class="select select--composer"
+                  aria-label="言語モデルを選択"
+                >
+                  <option value="gpt-4.1-mini">GPT-4.1 mini</option>
+                  <option value="gpt-4.1">GPT-4.1</option>
+                  <option value="claude-sonnet-4">Claude Sonnet 4</option>
+                  <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
+                </select>
+              </div>
+            </div>
+            <label class="sr-only" for="question-input">あなたの質問</label>
+            <textarea
+              id="question-input"
+              class="composer__input"
+              rows="2"
+              placeholder="業務やリポジトリ内のロジックについて質問…（Shift+Enterで改行）"
+              autocomplete="off"
+            ></textarea>
+            <div class="composer__actions">
+              <span class="composer__hint">
+                Enterで送信 · モック遅延：高速は思考より短い
+              </span>
+              <button type="button" class="btn btn--primary" id="btn-send">
+                送信
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <aside
+          class="panel panel--sources"
+          id="panel-sources"
+          role="tabpanel"
+          aria-labelledby="tab-sources"
+        >
+          <div class="sources-header">
+            <h2 class="sources-title">引用ソース</h2>
+            <p class="sources-desc" id="sources-context">
+              アシスタントの回答を選ぶとリポジトリからの抜粋が表示されます。
+            </p>
+          </div>
+          <div class="sources-list" id="sources-list"></div>
+        </aside>
+      </main>
+
+      <footer class="footer">
+        <span>プロトタイプUIのみ — ダミーデータ</span>
+        <button type="button" class="btn btn--ghost btn--small" id="btn-reset">
+          会話を消去
+        </button>
+      </footer>
+    </div>
+    <div
+      id="ref-popover"
+      class="ref-popover"
+      hidden
+      role="tooltip"
+      aria-hidden="true"
+    >
+      <div class="ref-popover__inner">
+        <span class="ref-popover__type" id="ref-popover-type"></span>
+        <div class="ref-popover__path" id="ref-popover-path"></div>
+        <div class="ref-popover__title" id="ref-popover-title"></div>
+        <div class="ref-popover__body" id="ref-popover-body"></div>
+      </div>
+    </div>
+    <script src="app_jp.js"></script>
+  </body>
+</html>
