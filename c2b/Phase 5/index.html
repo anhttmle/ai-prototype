@@ -1,0 +1,1559 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Software Center — Mockup | Spec-driven Cobol → Java</title>
+  <style>
+    :root {
+      --bg: #f4f5f7;
+      --surface: #ffffff;
+      --surface2: #eef0f3;
+      --border: #d1d5db;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --accent: #2563eb;
+      --success: #059669;
+      --warning: #d97706;
+      --danger: #dc2626;
+      --repo: #f3f4f6;
+      --repo-stroke: #9ca3af;
+      --ai: #fef3c7;
+      --ai-stroke: #d97706;
+      --specs: #ede9fe;
+      --specs-stroke: #7c3aed;
+      --actor: #ffffff;
+      --actor-stroke: #374151;
+      --added: #dcfce7;
+      --added-text: #166534;
+      --removed: #fee2e2;
+      --removed-text: #991b1b;
+      --modified: #fef9c3;
+      --modified-text: #854d0e;
+      --radius: 8px;
+      --font: system-ui, -apple-system, "Segoe UI", sans-serif;
+      --mono: ui-monospace, "Cascadia Code", monospace;
+      --drawer-w: 360px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    .app-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0.65rem 1rem;
+    }
+
+    .app-header-inner {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.65rem 1rem;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 0.95rem;
+      font-weight: 700;
+    }
+
+    .brand span {
+      font-size: 0.7rem;
+      color: var(--muted);
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .controls label {
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    .controls select,
+    .controls button.mode-btn {
+      font-family: inherit;
+      font-size: 0.78rem;
+      padding: 0.35rem 0.65rem;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+    }
+
+    .mode-toggle {
+      display: flex;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .mode-toggle button {
+      font-family: inherit;
+      font-size: 0.75rem;
+      padding: 0.35rem 0.7rem;
+      border: none;
+      background: var(--surface2);
+      color: var(--muted);
+      cursor: pointer;
+    }
+
+    .mode-toggle button.active {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .nav-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.3rem;
+      margin-left: auto;
+    }
+
+    .nav-tabs button {
+      font-family: inherit;
+      font-size: 0.75rem;
+      padding: 0.4rem 0.75rem;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--muted);
+      cursor: pointer;
+    }
+
+    .nav-tabs button:hover { border-color: var(--accent); color: var(--text); }
+    .nav-tabs button.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    main {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 1rem;
+    }
+
+    .view { display: block; }
+    .view.hidden { display: none; }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem;
+      margin-bottom: 0.85rem;
+    }
+
+    .panel h2 {
+      margin: 0 0 0.65rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+
+    .panel h3 {
+      margin: 0 0 0.5rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 0.65rem;
+    }
+
+    .stat-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.75rem;
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+
+    .stat-card:hover { border-color: var(--accent); }
+
+    .stat-card .val {
+      font-size: 1.5rem;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    .stat-card .lbl {
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-top: 0.2rem;
+    }
+
+    .callout {
+      border-left: 3px solid var(--accent);
+      background: var(--surface2);
+      padding: 0.75rem 1rem;
+      font-size: 0.82rem;
+      margin-top: 0.75rem;
+    }
+
+    .callout ul { margin: 0.35rem 0 0; padding-left: 1.2rem; }
+
+    .timeline {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+      align-items: center;
+      font-size: 0.78rem;
+      margin-top: 0.5rem;
+    }
+
+    .timeline span {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      padding: 0.25rem 0.5rem;
+      border-radius: 999px;
+    }
+
+    .timeline .arrow { color: var(--muted); border: none; background: none; padding: 0; }
+
+    .pipeline-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      padding: 1rem;
+    }
+
+    .pipeline-svg { display: block; min-width: 900px; }
+
+    .pipe-node {
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+
+    .pipe-node.dimmed { opacity: 0.35; }
+    .pipe-node.highlight { filter: brightness(0.95); outline: 2px solid var(--accent); outline-offset: 2px; }
+
+    .pipe-node rect, .pipe-node .node-bg {
+      rx: 6;
+    }
+
+    .pipe-edge { fill: none; stroke: var(--border); stroke-width: 1.5; }
+    .pipe-edge.dashed { stroke-dasharray: 6 4; stroke: var(--muted); }
+    .pipe-edge.highlight { stroke: var(--accent); stroke-width: 2.5; }
+
+    .pipe-label {
+      font-size: 11px;
+      fill: var(--text);
+      pointer-events: none;
+      text-anchor: middle;
+    }
+
+    .pipe-sublabel {
+      font-size: 9px;
+      fill: var(--muted);
+      pointer-events: none;
+      text-anchor: middle;
+    }
+
+    .badge {
+      display: inline-block;
+      font-size: 0.65rem;
+      font-weight: 600;
+      padding: 0.15rem 0.45rem;
+      border-radius: 999px;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+    }
+
+    .badge-todo { background: #e5e7eb; color: #374151; }
+    .badge-in_progress { background: #dbeafe; color: #1d4ed8; }
+    .badge-done { background: #d1fae5; color: #065f46; }
+    .badge-blocked { background: #fee2e2; color: #991b1b; }
+    .badge-pending { background: #fef3c7; color: #92400e; }
+    .badge-approved { background: #d1fae5; color: #065f46; }
+    .badge-running { background: #dbeafe; color: #1d4ed8; }
+    .badge-high { background: #fee2e2; color: #991b1b; }
+    .badge-medium { background: #fef3c7; color: #92400e; }
+    .badge-low { background: #e5e7eb; color: #374151; }
+
+    .filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .filter-bar input,
+    .filter-bar select {
+      font-family: inherit;
+      font-size: 0.78rem;
+      padding: 0.35rem 0.55rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+
+    table.data {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.8rem;
+    }
+
+    table.data th,
+    table.data td {
+      border: 1px solid var(--border);
+      padding: 0.45rem 0.6rem;
+      text-align: left;
+    }
+
+    table.data th {
+      background: var(--surface2);
+      font-weight: 600;
+    }
+
+    table.data tbody tr { cursor: pointer; }
+    table.data tbody tr:hover { background: var(--surface2); }
+    table.data tbody tr.row-highlight { background: #eff6ff; }
+
+    .artifact-layout {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      gap: 0.85rem;
+      min-height: 420px;
+    }
+
+    @media (max-width: 768px) {
+      .artifact-layout { grid-template-columns: 1fr; }
+    }
+
+    .artifact-tree {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      overflow-y: auto;
+      max-height: 520px;
+    }
+
+    .tree-group {
+      border-bottom: 1px solid var(--border);
+    }
+
+    .tree-group-title {
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--muted);
+      padding: 0.5rem 0.65rem;
+      background: var(--surface2);
+    }
+
+    .tree-item {
+      display: block;
+      width: 100%;
+      text-align: left;
+      font-family: inherit;
+      font-size: 0.78rem;
+      padding: 0.45rem 0.65rem;
+      border: none;
+      background: none;
+      cursor: pointer;
+      color: var(--text);
+    }
+
+    .tree-item:hover { background: var(--surface2); }
+    .tree-item.active {
+      background: #eff6ff;
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .artifact-preview {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      padding: 1rem;
+      overflow-y: auto;
+      max-height: 520px;
+    }
+
+    .artifact-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .spec-content h4 {
+      margin: 0.75rem 0 0.35rem;
+      font-size: 0.85rem;
+    }
+
+    .spec-content ul {
+      margin: 0 0 0.5rem;
+      padding-left: 1.2rem;
+      font-size: 0.8rem;
+    }
+
+    .spec-content code {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      background: var(--surface2);
+      padding: 0.1rem 0.3rem;
+      border-radius: 3px;
+    }
+
+    .review-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.85rem;
+      margin-bottom: 0.65rem;
+      background: var(--surface);
+    }
+
+    .review-card h3 {
+      margin: 0 0 0.35rem;
+      font-size: 0.85rem;
+    }
+
+    .review-card .meta {
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-bottom: 0.5rem;
+    }
+
+    .review-preview {
+      font-size: 0.78rem;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.5rem 0.65rem;
+      margin-bottom: 0.65rem;
+      font-family: var(--mono);
+      white-space: pre-wrap;
+    }
+
+    .review-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .btn {
+      font-family: inherit;
+      font-size: 0.78rem;
+      padding: 0.4rem 0.75rem;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: var(--surface);
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .btn-danger {
+      background: var(--danger);
+      border-color: var(--danger);
+      color: #fff;
+    }
+
+    .btn:hover { opacity: 0.9; }
+
+    .diff-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      align-items: center;
+      margin-bottom: 0.75rem;
+    }
+
+    .diff-block {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .diff-line {
+      padding: 0.2rem 0.65rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .diff-line:last-child { border-bottom: none; }
+    .diff-line.added { background: var(--added); color: var(--added-text); }
+    .diff-line.removed { background: var(--removed); color: var(--removed-text); }
+    .diff-line.modified { background: var(--modified); color: var(--modified-text); }
+    .diff-line.context { background: var(--surface); color: var(--muted); }
+
+    .drawer-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.25);
+      z-index: 200;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+    }
+
+    .drawer-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .drawer {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: var(--drawer-w);
+      max-width: 100%;
+      height: 100%;
+      background: var(--surface);
+      border-left: 1px solid var(--border);
+      z-index: 201;
+      transform: translateX(100%);
+      transition: transform 0.2s;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .drawer.open { transform: translateX(0); }
+
+    .drawer-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .drawer-header h2 {
+      margin: 0;
+      font-size: 0.9rem;
+    }
+
+    .drawer-close {
+      font-size: 1.25rem;
+      line-height: 1;
+      border: none;
+      background: none;
+      cursor: pointer;
+      color: var(--muted);
+      padding: 0.25rem;
+    }
+
+    .drawer-body {
+      padding: 1rem;
+      overflow-y: auto;
+      flex: 1;
+      font-size: 0.82rem;
+    }
+
+    .drawer-body dl {
+      margin: 0;
+      display: grid;
+      grid-template-columns: 100px 1fr;
+      gap: 0.35rem 0.5rem;
+    }
+
+    .drawer-body dt {
+      color: var(--muted);
+      font-size: 0.75rem;
+    }
+
+    .drawer-body dd { margin: 0; }
+
+    .empty-hint {
+      color: var(--muted);
+      font-size: 0.82rem;
+      padding: 2rem;
+      text-align: center;
+    }
+
+    .program-list {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      list-style: none;
+      padding: 0;
+      margin: 0.5rem 0 0;
+    }
+
+    .program-list li {
+      padding: 0.25rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+  <header class="app-header">
+    <div class="app-header-inner">
+      <div class="brand">
+        <h1>Software Center</h1>
+        <span>Spec-driven Cobol → Java · Mockup PO/PM</span>
+      </div>
+      <div class="controls">
+        <div class="mode-toggle" role="group" aria-label="Chế độ dự án">
+          <button type="button" data-mode="migration" class="active">Migration</button>
+          <button type="button" data-mode="from_scratch">From Scratch</button>
+        </div>
+        <label for="projectSelect">Dự án:</label>
+        <select id="projectSelect" aria-label="Chọn dự án demo">
+          <option value="account">Account Processing Migration</option>
+        </select>
+      </div>
+      <nav class="nav-tabs" role="tablist" aria-label="Màn hình chính">
+        <button type="button" role="tab" data-view="overview" class="active" aria-selected="true">Tổng quan</button>
+        <button type="button" role="tab" data-view="pipeline" aria-selected="false">Pipeline</button>
+        <button type="button" role="tab" data-view="artifacts" aria-selected="false">Artifacts</button>
+        <button type="button" role="tab" data-view="backlog" aria-selected="false">Backlog</button>
+        <button type="button" role="tab" data-view="review" aria-selected="false">Reviewer</button>
+        <button type="button" role="tab" data-view="specdiff" aria-selected="false">Spec Diff</button>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section id="view-overview" class="view" aria-labelledby="overview-heading">
+      <div class="panel">
+        <h2 id="overview-heading">Dashboard PO/PM</h2>
+        <div class="stats-grid" id="statsGrid"></div>
+        <div class="callout" id="valueCallout">
+          <strong>Giá trị cho PO/PM</strong>
+          <ul>
+            <li>Minh bạch: luôn biết hệ thống đang ở đâu so với mục tiêu Cobol → Java</li>
+            <li>Traceability: mọi thay đổi có dấu vết code → specs → backlog</li>
+            <li>Kiểm soát scope: backlog sinh từ Specs Diff, không phụ thuộc cảm tính</li>
+          </ul>
+        </div>
+        <h3 style="margin-top:1rem">Vòng lặp spec-driven</h3>
+        <div class="timeline" id="loopTimeline"></div>
+      </div>
+    </section>
+
+    <section id="view-pipeline" class="view hidden" aria-labelledby="pipeline-heading">
+      <div class="panel">
+        <h2 id="pipeline-heading">Luồng pipeline</h2>
+        <p style="font-size:0.78rem;color:var(--muted);margin:0 0 0.75rem">
+          Bấm vào node để xem chi tiết. Hover backlog item (tab Backlog) để highlight path.
+        </p>
+        <div class="pipeline-wrap">
+          <svg id="pipelineSvg" class="pipeline-svg" role="img" aria-label="Pipeline diagram"></svg>
+        </div>
+      </div>
+    </section>
+
+    <section id="view-artifacts" class="view hidden" aria-labelledby="artifacts-heading">
+      <div class="panel" style="padding:0.65rem">
+        <h2 id="artifacts-heading" style="padding:0.35rem 0.35rem 0">Artifacts — Repos &amp; Specs</h2>
+        <div class="artifact-layout" style="padding:0.35rem">
+          <div class="artifact-tree" id="artifactTree"></div>
+          <div class="artifact-preview" id="artifactPreview">
+            <p class="empty-hint">Chọn artifact bên trái để xem nội dung</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="view-backlog" class="view hidden" aria-labelledby="backlog-heading">
+      <div class="panel">
+        <h2 id="backlog-heading">Backlog</h2>
+        <div class="filter-bar">
+          <input type="search" id="backlogSearch" placeholder="Tìm theo title..." />
+          <select id="backlogStatusFilter">
+            <option value="">Tất cả status</option>
+            <option value="todo">Todo</option>
+            <option value="in_progress">In Progress</option>
+            <option value="done">Done</option>
+            <option value="blocked">Blocked</option>
+          </select>
+          <select id="backlogSourceFilter">
+            <option value="">Tất cả source</option>
+          </select>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="data" id="backlogTable">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Title</th>
+                <th>Priority</th>
+                <th>Status</th>
+                <th>Source</th>
+                <th>Traceability</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="view-review" class="view hidden" aria-labelledby="review-heading">
+      <div class="panel">
+        <h2 id="review-heading">Hàng đợi Reviewer</h2>
+        <p style="font-size:0.78rem;color:var(--muted);margin:0 0 0.75rem">
+          Approve hoặc Request changes — cập nhật badge trên pipeline node tương ứng.
+        </p>
+        <div id="reviewQueue"></div>
+      </div>
+    </section>
+
+    <section id="view-specdiff" class="view hidden" aria-labelledby="specdiff-heading">
+      <div class="panel">
+        <h2 id="specdiff-heading">So sánh Specs</h2>
+        <div class="diff-controls">
+          <label for="diffLeft">Từ:</label>
+          <select id="diffLeft"></select>
+          <label for="diffRight">Đến:</label>
+          <select id="diffRight"></select>
+          <button type="button" class="btn btn-primary" id="diffApply">Áp dụng</button>
+        </div>
+        <div id="diffOutput"></div>
+      </div>
+    </section>
+  </main>
+
+  <div class="drawer-overlay" id="drawerOverlay"></div>
+  <aside class="drawer" id="drawer" aria-hidden="true">
+    <div class="drawer-header">
+      <h2 id="drawerTitle">Chi tiết</h2>
+      <button type="button" class="drawer-close" id="drawerClose" aria-label="Đóng">&times;</button>
+    </div>
+    <div class="drawer-body" id="drawerBody"></div>
+  </aside>
+
+  <script>
+    const MOCK = {
+      project: {
+        id: "account",
+        name: "Account Processing Migration",
+        description: "Chuyển đổi hệ thống xử lý tài khoản từ Cobol sang Java",
+      },
+      repos: {
+        cobol: {
+          id: "cobol_repo",
+          type: "repo",
+          kind: "cobol",
+          label: "Cobol Repo",
+          version: "main",
+          programs: ["ACCT-OPEN.cbl", "INT-CALC.cbl", "BAL-INQ.cbl"],
+        },
+        java_100: {
+          id: "java_repo_100",
+          type: "repo",
+          kind: "java",
+          label: "Java Repo",
+          version: "1.0.0",
+          programs: ["AccountService.java", "InterestCalculator.java", "BalanceInquiry.java"],
+        },
+        java_110: {
+          id: "java_repo_110",
+          type: "repo",
+          kind: "java",
+          label: "Java Repo",
+          version: "1.1.0",
+          programs: ["AccountService.java", "InterestCalculator.java", "BalanceInquiry.java", "VipFeeWaiver.java"],
+        },
+      },
+      specs: {
+        cobol_specs_v1: {
+          id: "cobol_specs_v1",
+          type: "specs",
+          kind: "cobol",
+          label: "Cobol Specs",
+          version: "v1",
+          reviewerStatus: "approved",
+          modules: [
+            { name: "Account Opening", reqs: ["Validate customer ID format (9 digits)", "Create account record in ACCT-MASTER", "Generate welcome letter batch job"] },
+            { name: "Interest Calculation", reqs: ["Daily accrual on savings balance", "Apply tiered rate table RATE-TBL-01", "Round to 2 decimal places (HALF-UP)"] },
+            { name: "Balance Inquiry", reqs: ["Read current balance from ACCT-MASTER", "Include pending transactions flag", "Audit log every inquiry"] },
+          ],
+          linkedPrograms: ["ACCT-OPEN.cbl", "INT-CALC.cbl", "BAL-INQ.cbl"],
+        },
+        java_specs_base: {
+          id: "java_specs_base",
+          type: "specs",
+          kind: "java",
+          label: "Java Specs (Base)",
+          version: "base",
+          reviewerStatus: "approved",
+          modules: [
+            { name: "AccountService", reqs: ["REST POST /accounts — validate customerId", "Persist AccountEntity to PostgreSQL", "Emit AccountCreatedEvent"] },
+            { name: "InterestCalculator", reqs: ["Scheduled job dailyInterestAccrual()", "Load RateTable from config", "BigDecimal scale 2 HALF_UP"] },
+            { name: "BalanceInquiry", reqs: ["GET /accounts/{id}/balance", "Include pendingTransactions boolean", "Audit via AuditService"] },
+          ],
+          linkedPrograms: ["AccountService", "InterestCalculator", "BalanceInquiry"],
+        },
+        java_specs_100: {
+          id: "java_specs_100",
+          type: "specs",
+          kind: "java",
+          label: "Java Specs",
+          version: "1.0.0",
+          reviewerStatus: "approved",
+          modules: [
+            { name: "AccountService", reqs: ["REST POST /accounts — validate customerId", "JPA AccountRepository.save()", "Spring ApplicationEvent publish"] },
+            { name: "InterestCalculator", reqs: ["@Scheduled cron daily at 00:30", "RateTableService.loadActive()", "BigDecimal.setScale(2, HALF_UP)"] },
+            { name: "BalanceInquiry", reqs: ["GET /accounts/{id}/balance", "pendingTx flag from TransactionService", "Slf4j audit trail"] },
+          ],
+          linkedPrograms: ["AccountService", "InterestCalculator", "BalanceInquiry"],
+        },
+        java_specs_110: {
+          id: "java_specs_110",
+          type: "specs",
+          kind: "java",
+          label: "Java Specs",
+          version: "1.1.0",
+          reviewerStatus: "pending",
+          modules: [
+            { name: "AccountService", reqs: ["REST POST /accounts — validate customerId", "JPA AccountRepository.save()", "Spring ApplicationEvent publish"] },
+            { name: "InterestCalculator", reqs: ["@Scheduled cron daily at 00:30", "VIP tier: +0.25% bonus rate", "RateTableService.loadActive()", "BigDecimal.setScale(2, HALF_UP)"] },
+            { name: "BalanceInquiry", reqs: ["GET /accounts/{id}/balance", "pendingTx flag from TransactionService", "Slf4j audit trail"] },
+            { name: "VipFeeWaiver", reqs: ["If customer.tier == VIP waive monthly fee", "Hook into billing cycle end", "Audit waiver decision"] },
+          ],
+          linkedPrograms: ["AccountService", "InterestCalculator", "BalanceInquiry", "VipFeeWaiver"],
+        },
+        java_specs_scratch: {
+          id: "java_specs_scratch",
+          type: "specs",
+          kind: "java",
+          label: "Java Specs",
+          version: "draft",
+          reviewerStatus: "pending",
+          modules: [
+            { name: "AccountService", reqs: ["Migrate ACCT-OPEN logic to Spring Boot", "Validate customer ID", "Persist account"] },
+            { name: "InterestCalculator", reqs: ["Port INT-CALC daily accrual", "Configurable rate table"] },
+            { name: "BalanceInquiry", reqs: ["Port BAL-INQ online inquiry", "Audit logging"] },
+          ],
+          linkedPrograms: ["AccountService", "InterestCalculator", "BalanceInquiry"],
+        },
+      },
+      specDiffs: {
+        "cobol_specs_v1__java_specs_base": [
+          { type: "context", text: "=== Module: Interest Calculation → InterestCalculator ===" },
+          { type: "removed", text: "- Apply tiered rate table RATE-TBL-01 (COBOL copybook)" },
+          { type: "added", text: "+ Load RateTable from application config / DB" },
+          { type: "modified", text: "~ Round to 2 decimal → BigDecimal scale 2 HALF_UP" },
+          { type: "context", text: "=== Module: Account Opening → AccountService ===" },
+          { type: "removed", text: "- Generate welcome letter batch job" },
+          { type: "added", text: "+ Emit AccountCreatedEvent for downstream consumers" },
+        ],
+        "java_specs_base__java_specs_100": [
+          { type: "context", text: "=== Alignment: Base vs current Java 1.0.0 ===" },
+          { type: "modified", text: "~ Persist AccountEntity → JPA AccountRepository.save()" },
+          { type: "modified", text: "~ Scheduled job → @Scheduled cron daily at 00:30" },
+          { type: "modified", text: "~ Audit log → Slf4j audit trail" },
+        ],
+        "java_specs_100__java_specs_110": [
+          { type: "context", text: "=== Module: InterestCalculator ===" },
+          { type: "added", text: "+ VIP tier: +0.25% bonus rate on top of base rate" },
+          { type: "context", text: "=== New Module: VipFeeWaiver ===" },
+          { type: "added", text: "+ If customer.tier == VIP waive monthly fee" },
+          { type: "added", text: "+ Hook into billing cycle end" },
+          { type: "added", text: "+ Audit waiver decision" },
+        ],
+        "cobol_specs_v1__java_specs_scratch": [
+          { type: "context", text: "=== From Scratch migration diff ===" },
+          { type: "added", text: "+ AccountService — REST API layer (new)" },
+          { type: "added", text: "+ InterestCalculator — Spring @Scheduled job" },
+          { type: "removed", text: "- COBOL batch JCL dependencies" },
+        ],
+      },
+      backlogMigration: [
+        { id: "BL-001", title: "Implement VIP bonus rate in InterestCalculator", priority: "high", status: "in_progress", source: "specs_diff_1.0_1.1", traceability: { fromSpec: "java_specs_100", toSpec: "java_specs_110", diffRef: "java_specs_100__java_specs_110", programs: ["InterestCalculator.java"] }, highlightNodes: ["java_specs_110", "specs_diff_mid", "backlog"] },
+        { id: "BL-002", title: "Add VipFeeWaiver service module", priority: "high", status: "todo", source: "specs_diff_1.0_1.1", traceability: { fromSpec: "java_specs_100", toSpec: "java_specs_110", diffRef: "java_specs_100__java_specs_110", programs: ["VipFeeWaiver.java"] }, highlightNodes: ["java_repo_110", "source_diff", "java_specs_110", "backlog"] },
+        { id: "BL-003", title: "Align AccountService with Base spec (event publish)", priority: "medium", status: "done", source: "specs_diff_cobol_base", traceability: { fromSpec: "java_specs_base", toSpec: "java_specs_100", diffRef: "java_specs_base__java_specs_100", programs: ["AccountService.java"] }, highlightNodes: ["java_specs_base", "specs_diff_top", "backlog"] },
+        { id: "BL-004", title: "Port tiered rate table from Cobol copybook", priority: "high", status: "done", source: "specs_diff_cobol_base", traceability: { fromSpec: "cobol_specs_v1", toSpec: "java_specs_base", diffRef: "cobol_specs_v1__java_specs_base", programs: ["INT-CALC.cbl", "InterestCalculator.java"] }, highlightNodes: ["cobol_specs", "specs_migration", "java_specs_base", "backlog"] },
+        { id: "BL-005", title: "Review Java Specs 1.1.0 before backlog merge", priority: "medium", status: "blocked", source: "reviewer", traceability: { fromSpec: "java_specs_100", toSpec: "java_specs_110", diffRef: "java_specs_100__java_specs_110", programs: [] }, highlightNodes: ["src_respec_diff", "java_specs_110"] },
+        { id: "BL-006", title: "Update BalanceInquiry audit to Slf4j", priority: "low", status: "done", source: "specs_diff_cobol_base", traceability: { fromSpec: "java_specs_base", toSpec: "java_specs_100", diffRef: "java_specs_base__java_specs_100", programs: ["BalanceInquiry.java"] }, highlightNodes: ["java_repo_100", "specs_gen_2", "java_specs_100"] },
+        { id: "BL-007", title: "Close gap: welcome letter → event-driven letter service", priority: "medium", status: "todo", source: "specs_diff_cobol_base", traceability: { fromSpec: "cobol_specs_v1", toSpec: "java_specs_base", diffRef: "cobol_specs_v1__java_specs_base", programs: ["ACCT-OPEN.cbl"] }, highlightNodes: ["cobol_repo", "specs_gen_1", "cobol_specs"] },
+        { id: "BL-008", title: "Integration test: VIP fee waiver end-to-end", priority: "high", status: "todo", source: "specs_diff_1.0_1.1", traceability: { fromSpec: "java_specs_100", toSpec: "java_specs_110", diffRef: "java_specs_100__java_specs_110", programs: ["VipFeeWaiver.java"] }, highlightNodes: ["backlog", "dev"] },
+        { id: "BL-009", title: "Document Source Diff 1.0.0 → 1.1.0 for PO sign-off", priority: "low", status: "in_progress", source: "specs_diff_1.0_1.1", traceability: { fromSpec: "java_specs_100", toSpec: "java_specs_110", diffRef: "java_specs_100__java_specs_110", programs: [] }, highlightNodes: ["source_diff", "src_respec_diff"] },
+        { id: "BL-010", title: "Reconcile Java Specs Base with Cobol Specs reviewer notes", priority: "medium", status: "done", source: "specs_diff_cobol_base", traceability: { fromSpec: "cobol_specs_v1", toSpec: "java_specs_base", diffRef: "cobol_specs_v1__java_specs_base", programs: [] }, highlightNodes: ["specs_migration", "java_specs_base", "specs_diff_top"] },
+        { id: "BL-011", title: "Performance test InterestCalculator daily job", priority: "medium", status: "todo", source: "specs_diff_1.0_1.1", traceability: { fromSpec: "java_specs_100", toSpec: "java_specs_110", diffRef: "java_specs_100__java_specs_110", programs: ["InterestCalculator.java"] }, highlightNodes: ["java_repo_110", "backlog"] },
+        { id: "BL-012", title: "Backlog item from 3-way Specs Diff convergence", priority: "high", status: "todo", source: "specs_diff_convergence", traceability: { fromSpec: "java_specs_base", toSpec: "java_specs_110", diffRef: "java_specs_100__java_specs_110", programs: ["AccountService.java", "VipFeeWaiver.java"] }, highlightNodes: ["java_specs_base", "java_specs_100", "java_specs_110", "specs_diff_top", "backlog"] },
+      ],
+      backlogFromScratch: [
+        { id: "FS-001", title: "Implement AccountService from Java Specs", priority: "high", status: "in_progress", source: "specs_migration", traceability: { fromSpec: "cobol_specs_v1", toSpec: "java_specs_scratch", diffRef: "cobol_specs_v1__java_specs_scratch", programs: ["AccountService.java"] }, highlightNodes: ["java_specs", "backlog", "dev"] },
+        { id: "FS-002", title: "Fix failing test: interest accrual rounding", priority: "high", status: "blocked", source: "test_failure", traceability: { fromSpec: "java_specs_scratch", toSpec: "java_specs_scratch", diffRef: "", programs: ["InterestCalculator.java"] }, highlightNodes: ["test_result", "backlog"] },
+        { id: "FS-003", title: "Fix failing test: balance inquiry audit", priority: "medium", status: "todo", source: "test_failure", traceability: { fromSpec: "java_specs_scratch", toSpec: "java_specs_scratch", diffRef: "", programs: ["BalanceInquiry.java"] }, highlightNodes: ["test_result", "backlog"] },
+        { id: "FS-004", title: "Review Cobol Specs v1 (Specs Gen output)", priority: "medium", status: "done", source: "reviewer", traceability: { fromSpec: "cobol_repo", toSpec: "cobol_specs_v1", diffRef: "", programs: [] }, highlightNodes: ["specs_gen", "cobol_specs"] },
+        { id: "FS-005", title: "Port INT-CALC to InterestCalculator", priority: "high", status: "done", source: "specs_migration", traceability: { fromSpec: "cobol_specs_v1", toSpec: "java_specs_scratch", diffRef: "cobol_specs_v1__java_specs_scratch", programs: ["INT-CALC.cbl"] }, highlightNodes: ["specs_migration", "java_specs"] },
+        { id: "FS-006", title: "Deploy v0.2 to staging for test run", priority: "medium", status: "done", source: "deploy", traceability: { fromSpec: "", toSpec: "", diffRef: "", programs: [] }, highlightNodes: ["java_repo", "code_deploy"] },
+      ],
+      reviewerQueue: [
+        { id: "RV-001", step: "Specs Gen", nodeId: "specs_gen_1", title: "Review Cobol Specs generated from ACCT-OPEN.cbl", assignee: "Nguyen T.A.", preview: "+ Module Account Opening\n+ Validate customer ID (9 digits)\n? Confidence: 0.87 on rate table mapping", status: "pending" },
+        { id: "RV-002", step: "Specs Migration", nodeId: "specs_migration", title: "Review Java Specs (Base) from Cobol Specs", assignee: "Tran B.H.", preview: "~ InterestCalculation → InterestCalculator\n+ BigDecimal HALF_UP\n- COBOL copybook reference", status: "pending" },
+        { id: "RV-003", step: "Specs Diff", nodeId: "specs_diff_top", title: "Review backlog items from Base vs 1.0.0 vs 1.1.0 convergence", assignee: "Le C.D.", preview: "12 backlog candidates\n3 high priority\n2 blocked on reviewer", status: "pending" },
+        { id: "RV-004", step: "Specs Gen", nodeId: "specs_gen_2", title: "Review Java Specs 1.0.0 reverse-engineered from repo", assignee: "Pham E.F.", preview: "+ @Scheduled cron confirmed\n~ Audit: Slf4j vs legacy log", status: "pending" },
+        { id: "RV-005", step: "Specs Diff", nodeId: "src_respec_diff", title: "Review Java Specs 1.1.0 from Source Diff", assignee: "Hoang G.I.", preview: "+ VIP tier bonus rate\n+ New module VipFeeWaiver", status: "pending" },
+      ],
+      aiJobs: {
+        specs_gen_1: { status: "done", duration: "4m 12s", lastRun: "2026-05-28 09:15" },
+        specs_migration: { status: "done", duration: "6m 45s", lastRun: "2026-05-28 10:02" },
+        specs_diff_top: { status: "running", duration: "—", lastRun: "2026-06-01 08:30" },
+        specs_gen_2: { status: "done", duration: "3m 28s", lastRun: "2026-05-30 14:20" },
+        src_respec_diff: { status: "done", duration: "2m 55s", lastRun: "2026-05-31 11:00" },
+        specs_gen: { status: "done", duration: "5m 01s", lastRun: "2026-05-27 16:00" },
+        specs_migration_fs: { status: "done", duration: "7m 10s", lastRun: "2026-05-27 17:30" },
+      },
+      tests: {
+        cases: [
+          { id: "TC-01", name: "Account opening happy path", status: "pass" },
+          { id: "TC-02", name: "Invalid customer ID rejected", status: "pass" },
+          { id: "TC-03", name: "Daily interest accrual standard rate", status: "fail" },
+          { id: "TC-04", name: "Daily interest accrual rounding HALF_UP", status: "fail" },
+          { id: "TC-05", name: "Balance inquiry returns current balance", status: "pass" },
+          { id: "TC-06", name: "Balance inquiry audit logged", status: "fail" },
+          { id: "TC-07", name: "Tiered rate table tier boundary", status: "pass" },
+          { id: "TC-08", name: "Concurrent account creation", status: "pass" },
+        ],
+        deploy: { id: "DEP-003", env: "staging", version: "0.2.0", at: "2026-05-29 18:00", pass: 6, fail: 2 },
+      },
+      pipelineMigration: {
+        nodes: [
+          { id: "cobol_repo", label: "Cobol Repo", sub: "main", type: "repo", x: 40, y: 40, w: 120, h: 44 },
+          { id: "specs_gen_1", label: "Restructure AI", sub: "Specs Gen", type: "ai", x: 200, y: 40, w: 130, h: 44 },
+          { id: "cobol_specs", label: "Cobol Specs", sub: "v1", type: "specs", x: 370, y: 40, w: 110, h: 44 },
+          { id: "specs_migration", label: "Restructure AI", sub: "Specs Migration", type: "ai", x: 520, y: 40, w: 130, h: 44 },
+          { id: "java_specs_base", label: "Java Specs", sub: "Base", type: "specs", x: 690, y: 40, w: 110, h: 44 },
+          { id: "dev", label: "Dev Team /", sub: "Coding Agent", type: "actor", x: 40, y: 140, w: 120, h: 44 },
+          { id: "java_repo_100", label: "Java Repo", sub: "1.0.0", type: "repo", x: 200, y: 140, w: 110, h: 44 },
+          { id: "specs_gen_2", label: "Restructure AI", sub: "Specs Gen", type: "ai", x: 350, y: 140, w: 130, h: 44 },
+          { id: "java_specs_100", label: "Java Specs", sub: "1.0.0", type: "specs", x: 520, y: 140, w: 110, h: 44 },
+          { id: "java_repo_110", label: "Java Repo", sub: "1.1.0", type: "repo", x: 40, y: 240, w: 110, h: 44 },
+          { id: "source_diff", label: "Source Diff", sub: "1.0.0 vs 1.1.0", type: "ai", x: 200, y: 240, w: 120, h: 44 },
+          { id: "src_respec_diff", label: "Restructure AI", sub: "Specs Diff", type: "ai", x: 370, y: 240, w: 130, h: 44 },
+          { id: "java_specs_110", label: "Java Specs", sub: "1.1.0", type: "specs", x: 540, y: 240, w: 110, h: 44 },
+          { id: "specs_diff_top", label: "Restructure AI", sub: "Specs Diff", type: "ai", x: 720, y: 140, w: 130, h: 44 },
+          { id: "backlog", label: "Backlog", sub: "12 items", type: "actor", x: 890, y: 140, w: 100, h: 44 },
+        ],
+        edges: [
+          { from: "cobol_repo", to: "specs_gen_1" },
+          { from: "specs_gen_1", to: "cobol_specs" },
+          { from: "cobol_specs", to: "specs_migration" },
+          { from: "specs_migration", to: "java_specs_base" },
+          { from: "java_specs_base", to: "specs_diff_top" },
+          { from: "dev", to: "java_repo_100" },
+          { from: "java_repo_100", to: "specs_gen_2" },
+          { from: "specs_gen_2", to: "java_specs_100" },
+          { from: "java_specs_100", to: "specs_diff_top" },
+          { from: "dev", to: "java_repo_110" },
+          { from: "java_repo_100", to: "source_diff", dashed: false },
+          { from: "java_repo_110", to: "source_diff" },
+          { from: "source_diff", to: "src_respec_diff" },
+          { from: "java_specs_100", to: "src_respec_diff" },
+          { from: "src_respec_diff", to: "java_specs_110" },
+          { from: "java_specs_110", to: "specs_diff_top" },
+          { from: "specs_diff_top", to: "backlog" },
+          { from: "backlog", to: "dev", dashed: true },
+        ],
+      },
+      pipelineFromScratch: {
+        nodes: [
+          { id: "cobol_repo", label: "Cobol Repo", sub: "main", type: "repo", x: 40, y: 80, w: 120, h: 44 },
+          { id: "specs_gen", label: "Restructure AI", sub: "Specs Gen", type: "ai", x: 200, y: 80, w: 130, h: 44 },
+          { id: "cobol_specs", label: "Cobol Specs", sub: "v1", type: "specs", x: 370, y: 80, w: 110, h: 44 },
+          { id: "specs_migration_fs", label: "Restructure AI", sub: "Specs Migration", type: "ai", x: 520, y: 80, w: 130, h: 44 },
+          { id: "java_specs", label: "Java Specs", sub: "draft", type: "specs", x: 690, y: 80, w: 110, h: 44 },
+          { id: "backlog", label: "Backlog", sub: "6 items", type: "actor", x: 850, y: 80, w: 100, h: 44 },
+          { id: "tester", label: "Tester", sub: "", type: "actor", x: 690, y: 180, w: 90, h: 44 },
+          { id: "java_test", label: "Java Test case", sub: "8 tests", type: "specs", x: 820, y: 180, w: 110, h: 44 },
+          { id: "code_deploy", label: "Code deploy", sub: "staging", type: "ai", x: 960, y: 180, w: 110, h: 44 },
+          { id: "test_result", label: "Test result", sub: "6 pass / 2 fail", type: "actor", x: 960, y: 280, w: 110, h: 44 },
+          { id: "dev", label: "Dev Team /", sub: "Coding Agent", type: "actor", x: 850, y: 280, w: 120, h: 44 },
+          { id: "java_repo", label: "Java Repo", sub: "0.2.0", type: "repo", x: 690, y: 280, w: 110, h: 44 },
+        ],
+        edges: [
+          { from: "cobol_repo", to: "specs_gen" },
+          { from: "specs_gen", to: "cobol_specs" },
+          { from: "cobol_specs", to: "specs_migration_fs" },
+          { from: "specs_migration_fs", to: "java_specs" },
+          { from: "java_specs", to: "backlog" },
+          { from: "java_specs", to: "tester" },
+          { from: "tester", to: "java_test" },
+          { from: "java_test", to: "code_deploy" },
+          { from: "code_deploy", to: "test_result" },
+          { from: "test_result", to: "backlog" },
+          { from: "backlog", to: "dev" },
+          { from: "dev", to: "java_repo" },
+          { from: "java_repo", to: "code_deploy" },
+        ],
+      },
+    };
+
+    const sessionState = {
+      projectMode: "migration",
+      activeView: "overview",
+      selectedArtifact: null,
+      approvedReviews: new Set(),
+      highlightNodes: null,
+      diffPair: { left: "java_specs_100", right: "java_specs_110" },
+    };
+
+    const NODE_COLORS = {
+      repo: { fill: "#f3f4f6", stroke: "#9ca3af" },
+      ai: { fill: "#fef3c7", stroke: "#d97706" },
+      specs: { fill: "#ede9fe", stroke: "#7c3aed" },
+      actor: { fill: "#ffffff", stroke: "#374151" },
+    };
+
+    function $(sel, root = document) { return root.querySelector(sel); }
+    function $$(sel, root = document) { return [...root.querySelectorAll(sel)]; }
+
+    function getBacklog() {
+      return sessionState.projectMode === "migration"
+        ? MOCK.backlogMigration
+        : MOCK.backlogFromScratch;
+    }
+
+    function getReviewerQueue() {
+      return MOCK.reviewerQueue.filter((r) => !sessionState.approvedReviews.has(r.id));
+    }
+
+    function getPipelineDef() {
+      return sessionState.projectMode === "migration"
+        ? MOCK.pipelineMigration
+        : MOCK.pipelineFromScratch;
+    }
+
+    function badge(cls, text) {
+      return `<span class="badge badge-${cls}">${text.replace(/_/g, " ")}</span>`;
+    }
+
+    function openDrawer(title, html) {
+      $("#drawerTitle").textContent = title;
+      $("#drawerBody").innerHTML = html;
+      $("#drawer").classList.add("open");
+      $("#drawerOverlay").classList.add("open");
+      $("#drawer").setAttribute("aria-hidden", "false");
+    }
+
+    function closeDrawer() {
+      $("#drawer").classList.remove("open");
+      $("#drawerOverlay").classList.remove("open");
+      $("#drawer").setAttribute("aria-hidden", "true");
+    }
+
+    function switchView(viewId) {
+      sessionState.activeView = viewId;
+      $$(".view").forEach((v) => v.classList.add("hidden"));
+      $(`#view-${viewId}`).classList.remove("hidden");
+      $$(".nav-tabs button").forEach((b) => {
+        const active = b.dataset.view === viewId;
+        b.classList.toggle("active", active);
+        b.setAttribute("aria-selected", active ? "true" : "false");
+      });
+      if (viewId === "pipeline") renderPipeline();
+      if (viewId === "artifacts") renderArtifacts();
+      if (viewId === "backlog") renderBacklog();
+      if (viewId === "review") renderReview();
+      if (viewId === "specdiff") renderSpecDiff();
+      if (viewId === "overview") renderOverview();
+    }
+
+    function renderOverview() {
+      const backlog = getBacklog();
+      const open = backlog.filter((b) => b.status !== "done").length;
+      const done = backlog.filter((b) => b.status === "done").length;
+      const pendingReview = getReviewerQueue().length;
+      const testPass = sessionState.projectMode === "from_scratch"
+        ? MOCK.tests.deploy.pass
+        : null;
+      const testTotal = sessionState.projectMode === "from_scratch"
+        ? MOCK.tests.deploy.pass + MOCK.tests.deploy.fail
+        : null;
+
+      const stats = [
+        { val: open, lbl: "Backlog mở", view: "backlog" },
+        { val: done, lbl: "Backlog done", view: "backlog" },
+        { val: pendingReview, lbl: "Pending review", view: "review" },
+      ];
+      if (testPass !== null) {
+        stats.push({ val: `${testPass}/${testTotal}`, lbl: "Test pass rate", view: "backlog" });
+      }
+      stats.push({ val: sessionState.projectMode === "migration" ? "3" : "1", lbl: "Luồng pipeline", view: "pipeline" });
+
+      $("#statsGrid").innerHTML = stats.map((s) =>
+        `<div class="stat-card" data-view="${s.view}"><div class="val">${s.val}</div><div class="lbl">${s.lbl}</div></div>`
+      ).join("");
+
+      $$("#statsGrid .stat-card").forEach((el) => {
+        el.addEventListener("click", () => switchView(el.dataset.view));
+      });
+
+      const loop = sessionState.projectMode === "migration"
+        ? ["Cobol baseline", "Java 1.0.0 reverse-spec", "1.1.0 Source Diff", "Specs Diff convergence", "Backlog", "Dev", "Lặp lại"]
+        : ["Cobol Specs Gen", "Specs Migration", "Java Specs", "Backlog", "Dev", "Deploy", "Test", "Backlog"];
+      $("#loopTimeline").innerHTML = loop.map((s, i) =>
+        (i > 0 ? '<span class="arrow">→</span>' : "") + `<span>${s}</span>`
+      ).join("");
+    }
+
+    function nodeCenter(node) {
+      return { cx: node.x + node.w / 2, cy: node.y + node.h / 2 };
+    }
+
+    function renderPipeline() {
+      const def = getPipelineDef();
+      const svg = $("#pipelineSvg");
+      const pad = 20;
+      const maxX = Math.max(...def.nodes.map((n) => n.x + n.w)) + pad;
+      const maxY = Math.max(...def.nodes.map((n) => n.y + n.h)) + pad;
+      svg.setAttribute("width", maxX);
+      svg.setAttribute("height", maxY);
+      svg.setAttribute("viewBox", `0 0 ${maxX} ${maxY}`);
+
+      const nodeMap = Object.fromEntries(def.nodes.map((n) => [n.id, n]));
+      const hl = sessionState.highlightNodes;
+
+      let html = "";
+      def.edges.forEach((e) => {
+        const from = nodeMap[e.from];
+        const to = nodeMap[e.to];
+        if (!from || !to) return;
+        const f = nodeCenter(from);
+        const t = nodeCenter(to);
+        let x1 = f.cx, y1 = f.cy, x2 = t.cx, y2 = t.cy;
+        if (from.x + from.w < to.x) { x1 = from.x + from.w; x2 = to.x; }
+        else if (to.x + to.w < from.x) { x1 = from.x; x2 = to.x + to.w; }
+        else if (from.y + from.h < to.y) { y1 = from.y + from.h; y2 = to.y; }
+        else { y1 = from.y; y2 = to.y + to.h; }
+        const edgeHl = hl && hl.includes(e.from) && hl.includes(e.to);
+        html += `<path class="pipe-edge${e.dashed ? " dashed" : ""}${edgeHl ? " highlight" : ""}" d="M${x1},${y1} L${x2},${y2}" />`;
+      });
+
+      def.nodes.forEach((n) => {
+        const colors = NODE_COLORS[n.type] || NODE_COLORS.actor;
+        const job = MOCK.aiJobs[n.id];
+        let statusBadge = "";
+        if (sessionState.approvedReviews.size && MOCK.reviewerQueue.some(r => r.nodeId === n.id && sessionState.approvedReviews.has(r.id))) {
+          statusBadge = "Approved";
+        } else if (job) {
+          statusBadge = job.status === "running" ? "Running" : job.status === "done" ? "Done" : job.status;
+        }
+        const isHl = hl && hl.includes(n.id);
+        const isDim = hl && !isHl;
+        html += `<g class="pipe-node${isDim ? " dimmed" : ""}${isHl ? " highlight" : ""}" data-node-id="${n.id}" tabindex="0">`;
+        html += `<rect x="${n.x}" y="${n.y}" width="${n.w}" height="${n.h}" fill="${colors.fill}" stroke="${colors.stroke}" stroke-width="1.5" rx="6" />`;
+        html += `<text class="pipe-label" x="${n.x + n.w / 2}" y="${n.y + n.h / 2 - 4}">${n.label}</text>`;
+        if (n.sub) html += `<text class="pipe-sublabel" x="${n.x + n.w / 2}" y="${n.y + n.h / 2 + 10}">${n.sub}</text>`;
+        if (statusBadge) {
+          html += `<text class="pipe-sublabel" x="${n.x + n.w / 2}" y="${n.y + n.h + 12}" fill="${statusBadge === "Running" ? "#2563eb" : statusBadge === "Approved" ? "#059669" : "#6b7280"}">${statusBadge}</text>`;
+        }
+        html += `</g>`;
+      });
+
+      svg.innerHTML = html;
+      $$(".pipe-node", svg).forEach((g) => {
+        g.addEventListener("click", () => showNodeDetail(g.dataset.nodeId));
+      });
+    }
+
+    function showNodeDetail(nodeId) {
+      const def = getPipelineDef();
+      const node = def.nodes.find((n) => n.id === nodeId);
+      if (!node) return;
+
+      let html = `<dl>`;
+      html += `<dt>Node</dt><dd>${node.label} ${node.sub ? "(" + node.sub + ")" : ""}</dd>`;
+      html += `<dt>Loại</dt><dd>${node.type}</dd>`;
+
+      const job = MOCK.aiJobs[nodeId];
+      if (job) {
+        html += `<dt>AI Job</dt><dd>${badge(job.status, job.status)} · ${job.duration} · ${job.lastRun}</dd>`;
+      }
+
+      const repoKey = Object.keys(MOCK.repos).find((k) => MOCK.repos[k].id === nodeId || nodeId.includes(MOCK.repos[k].id.replace("java_repo_", "java_repo_")));
+      if (nodeId === "cobol_repo") {
+        const r = MOCK.repos.cobol;
+        html += `<dt>Programs</dt><dd><ul class="program-list">${r.programs.map(p => `<li>${p}</li>`).join("")}</ul></dd>`;
+      } else if (nodeId === "java_repo_100") {
+        html += `<dt>Programs</dt><dd><ul class="program-list">${MOCK.repos.java_100.programs.map(p => `<li>${p}</li>`).join("")}</ul></dd>`;
+      } else if (nodeId === "java_repo_110" || nodeId === "java_repo") {
+        const r = nodeId === "java_repo" ? { programs: MOCK.repos.java_100.programs } : MOCK.repos.java_110;
+        html += `<dt>Programs</dt><dd><ul class="program-list">${r.programs.map(p => `<li>${p}</li>`).join("")}</ul></dd>`;
+      }
+
+      const specMap = {
+        cobol_specs: "cobol_specs_v1",
+        java_specs_base: "java_specs_base",
+        java_specs_100: "java_specs_100",
+        java_specs_110: "java_specs_110",
+        java_specs: "java_specs_scratch",
+      };
+      if (specMap[nodeId]) {
+        const s = MOCK.specs[specMap[nodeId]];
+        html += `<dt>Specs</dt><dd>${s.label} ${s.version} · ${badge(s.reviewerStatus, s.reviewerStatus)}</dd>`;
+        html += `<dt>Modules</dt><dd>${s.modules.length} modules</dd>`;
+      }
+
+      if (nodeId === "backlog") {
+        const bl = getBacklog();
+        html += `<dt>Items</dt><dd>${bl.length} total · ${bl.filter(b => b.status !== "done").length} open</dd>`;
+      }
+
+      if (nodeId === "tester" || nodeId === "java_test" || nodeId === "test_result") {
+        html += `<dt>Tests</dt><dd>${MOCK.tests.cases.length} cases · ${MOCK.tests.deploy.pass} pass / ${MOCK.tests.deploy.fail} fail</dd>`;
+      }
+
+      if (nodeId === "source_diff") {
+        html += `<dt>Diff</dt><dd>Java Repo 1.0.0 ↔ 1.1.0 · 2 files changed, 1 added</dd>`;
+      }
+
+      html += `</dl>`;
+      html += `<p style="margin-top:1rem"><button type="button" class="btn btn-primary" id="drawerGoArtifacts">Xem Artifacts</button></p>`;
+      openDrawer(node.label, html);
+      const goBtn = $("#drawerGoArtifacts");
+      if (goBtn) goBtn.addEventListener("click", () => { closeDrawer(); switchView("artifacts"); });
+    }
+
+    function getArtifactList() {
+      if (sessionState.projectMode === "migration") {
+        return [
+          { group: "Repos", items: [
+            { id: "cobol_repo", label: "Cobol Repo (main)", data: MOCK.repos.cobol },
+            { id: "java_repo_100", label: "Java Repo 1.0.0", data: MOCK.repos.java_100 },
+            { id: "java_repo_110", label: "Java Repo 1.1.0", data: MOCK.repos.java_110 },
+          ]},
+          { group: "Specs", items: [
+            { id: "cobol_specs_v1", label: "Cobol Specs v1", data: MOCK.specs.cobol_specs_v1 },
+            { id: "java_specs_base", label: "Java Specs (Base)", data: MOCK.specs.java_specs_base },
+            { id: "java_specs_100", label: "Java Specs 1.0.0", data: MOCK.specs.java_specs_100 },
+            { id: "java_specs_110", label: "Java Specs 1.1.0", data: MOCK.specs.java_specs_110 },
+          ]},
+        ];
+      }
+      return [
+        { group: "Repos", items: [
+          { id: "cobol_repo", label: "Cobol Repo (main)", data: MOCK.repos.cobol },
+          { id: "java_repo", label: "Java Repo 0.2.0", data: { ...MOCK.repos.java_100, version: "0.2.0" } },
+        ]},
+        { group: "Specs", items: [
+          { id: "cobol_specs_v1", label: "Cobol Specs v1", data: MOCK.specs.cobol_specs_v1 },
+          { id: "java_specs_scratch", label: "Java Specs (draft)", data: MOCK.specs.java_specs_scratch },
+        ]},
+        { group: "Tests", items: [
+          { id: "test_cases", label: "Java Test cases (8)", data: { type: "tests", cases: MOCK.tests.cases } },
+          { id: "test_deploy", label: "Deploy " + MOCK.tests.deploy.id, data: { type: "deploy", ...MOCK.tests.deploy } },
+        ]},
+      ];
+    }
+
+    function renderArtifacts() {
+      const tree = $("#artifactTree");
+      const groups = getArtifactList();
+      tree.innerHTML = groups.map((g) => `
+        <div class="tree-group">
+          <div class="tree-group-title">${g.group}</div>
+          ${g.items.map((it) => `
+            <button type="button" class="tree-item${sessionState.selectedArtifact === it.id ? " active" : ""}" data-artifact-id="${it.id}">${it.label}</button>
+          `).join("")}
+        </div>
+      `).join("");
+
+      $$(".tree-item", tree).forEach((btn) => {
+        btn.addEventListener("click", () => {
+          sessionState.selectedArtifact = btn.dataset.artifactId;
+          renderArtifacts();
+          showArtifactPreview(btn.dataset.artifactId);
+        });
+      });
+
+      if (sessionState.selectedArtifact) showArtifactPreview(sessionState.selectedArtifact);
+    }
+
+    function showArtifactPreview(artifactId) {
+      const preview = $("#artifactPreview");
+      const groups = getArtifactList();
+      let item = null;
+      for (const g of groups) {
+        item = g.items.find((i) => i.id === artifactId);
+        if (item) break;
+      }
+      if (!item) {
+        preview.innerHTML = `<p class="empty-hint">Không tìm thấy artifact</p>`;
+        return;
+      }
+      const d = item.data;
+      if (d.type === "tests") {
+        preview.innerHTML = `
+          <h3>Java Test cases</h3>
+          <table class="data"><thead><tr><th>ID</th><th>Name</th><th>Status</th></tr></thead>
+          <tbody>${d.cases.map(c => `<tr><td>${c.id}</td><td>${c.name}</td><td>${badge(c.status === "pass" ? "done" : "blocked", c.status)}</td></tr>`).join("")}</tbody></table>`;
+        return;
+      }
+      if (d.type === "deploy") {
+        preview.innerHTML = `
+          <h3>Deploy ${d.id}</h3>
+          <div class="artifact-meta">${badge("done", d.env)} ${badge("medium", d.version)}</div>
+          <p>Thời gian: ${d.at}</p>
+          <p>Kết quả: ${d.pass} pass / ${d.fail} fail</p>`;
+        return;
+      }
+      if (d.type === "repo") {
+        preview.innerHTML = `
+          <h3>${d.label} ${d.version ? "· " + d.version : ""}</h3>
+          <div class="artifact-meta">${badge("low", d.kind)}</div>
+          <h4>Programs / Files</h4>
+          <ul class="program-list">${d.programs.map(p => `<li>${p}</li>`).join("")}</ul>`;
+        return;
+      }
+      if (d.type === "specs") {
+        preview.innerHTML = `
+          <h3>${d.label} · ${d.version}</h3>
+          <div class="artifact-meta">${badge(d.reviewerStatus === "approved" ? "approved" : "pending", d.reviewerStatus)} ${badge("low", d.kind)}</div>
+          <p style="font-size:0.78rem;color:var(--muted)">Linked: ${d.linkedPrograms.map(p => `<code>${p}</code>`).join(", ")}</p>
+          <div class="spec-content">${d.modules.map(m => `
+            <h4>${m.name}</h4>
+            <ul>${m.reqs.map(r => `<li>${r}</li>`).join("")}</ul>
+          `).join("")}</div>`;
+        return;
+      }
+      preview.innerHTML = `<p class="empty-hint">Chọn artifact bên trái</p>`;
+    }
+
+    function renderBacklog() {
+      const tbody = $("#backlogTable tbody");
+      const search = ($("#backlogSearch").value || "").toLowerCase();
+      const statusF = $("#backlogStatusFilter").value;
+      const sourceF = $("#backlogSourceFilter").value;
+      let items = getBacklog().filter((b) => {
+        if (search && !b.title.toLowerCase().includes(search)) return false;
+        if (statusF && b.status !== statusF) return false;
+        if (sourceF && b.source !== sourceF) return false;
+        return true;
+      });
+
+      tbody.innerHTML = items.map((b) => `
+        <tr data-backlog-id="${b.id}" data-highlight="${(b.highlightNodes || []).join(",")}">
+          <td>${b.id}</td>
+          <td>${b.title}</td>
+          <td>${badge(b.priority, b.priority)}</td>
+          <td>${badge(b.status, b.status)}</td>
+          <td><code style="font-size:0.72rem">${b.source}</code></td>
+          <td style="font-size:0.72rem">${b.traceability.fromSpec || "—"} → ${b.traceability.toSpec || "—"}<br><code>${(b.traceability.programs || []).join(", ") || "—"}</code></td>
+        </tr>
+      `).join("");
+
+      $$("#backlogTable tbody tr").forEach((tr) => {
+        tr.addEventListener("click", () => showBacklogDetail(tr.dataset.backlogId));
+        tr.addEventListener("mouseenter", () => {
+          const nodes = tr.dataset.highlight ? tr.dataset.highlight.split(",").filter(Boolean) : null;
+          sessionState.highlightNodes = nodes;
+          if (sessionState.activeView === "pipeline") renderPipeline();
+        });
+        tr.addEventListener("mouseleave", () => {
+          sessionState.highlightNodes = null;
+          if (sessionState.activeView === "pipeline") renderPipeline();
+        });
+      });
+    }
+
+    function showBacklogDetail(id) {
+      const item = getBacklog().find((b) => b.id === id);
+      if (!item) return;
+      let html = `<dl>
+        <dt>ID</dt><dd>${item.id}</dd>
+        <dt>Title</dt><dd>${item.title}</dd>
+        <dt>Priority</dt><dd>${badge(item.priority, item.priority)}</dd>
+        <dt>Status</dt><dd>${badge(item.status, item.status)}</dd>
+        <dt>Source</dt><dd><code>${item.source}</code></dd>
+        <dt>From Spec</dt><dd>${item.traceability.fromSpec || "—"}</dd>
+        <dt>To Spec</dt><dd>${item.traceability.toSpec || "—"}</dd>
+        <dt>Programs</dt><dd>${(item.traceability.programs || []).join(", ") || "—"}</dd>
+      </dl>`;
+      if (item.traceability.diffRef && MOCK.specDiffs[item.traceability.diffRef]) {
+        html += `<h3 style="margin-top:1rem">Diff snippet</h3><div class="diff-block">`;
+        MOCK.specDiffs[item.traceability.diffRef].slice(0, 5).forEach((line) => {
+          html += `<div class="diff-line ${line.type}">${line.text}</div>`;
+        });
+        html += `</div>`;
+      }
+      html += `<p style="margin-top:1rem">
+        <button type="button" class="btn btn-primary" id="drawerGoSpecDiff">Xem Spec Diff</button>
+        <button type="button" class="btn" id="drawerGoPipeline">Highlight pipeline</button>
+      </p>`;
+      openDrawer(item.id + ": " + item.title.slice(0, 40), html);
+      const diffBtn = $("#drawerGoSpecDiff");
+      const pipeBtn = $("#drawerGoPipeline");
+      if (diffBtn) {
+        diffBtn.addEventListener("click", () => {
+          if (item.traceability.fromSpec && item.traceability.toSpec) {
+            sessionState.diffPair = {
+              left: item.traceability.fromSpec,
+              right: item.traceability.toSpec,
+            };
+          }
+          closeDrawer();
+          switchView("specdiff");
+        });
+      }
+      if (pipeBtn) {
+        pipeBtn.addEventListener("click", () => {
+          sessionState.highlightNodes = item.highlightNodes ? [...item.highlightNodes] : null;
+          closeDrawer();
+          switchView("pipeline");
+        });
+      }
+    }
+
+    function populateSourceFilter() {
+      const sel = $("#backlogSourceFilter");
+      const sources = [...new Set(getBacklog().map((b) => b.source))];
+      sel.innerHTML = `<option value="">Tất cả source</option>` +
+        sources.map((s) => `<option value="${s}">${s}</option>`).join("");
+    }
+
+    function renderReview() {
+      const queue = getReviewerQueue();
+      const host = $("#reviewQueue");
+      if (!queue.length) {
+        host.innerHTML = `<p class="empty-hint">Không còn item pending — tất cả đã được review.</p>`;
+        return;
+      }
+      host.innerHTML = queue.map((r) => `
+        <div class="review-card" data-review-id="${r.id}">
+          <h3>${r.title}</h3>
+          <div class="meta">${badge("pending", r.step)} · Assignee: ${r.assignee} · Node: <code>${r.nodeId}</code></div>
+          <div class="review-preview">${r.preview.replace(/</g, "&lt;")}</div>
+          <div class="review-actions">
+            <button type="button" class="btn btn-primary" data-action="approve" data-id="${r.id}">Approve</button>
+            <button type="button" class="btn btn-danger" data-action="reject" data-id="${r.id}">Request changes</button>
+          </div>
+        </div>
+      `).join("");
+
+      $$("[data-action=approve]", host).forEach((btn) => {
+        btn.addEventListener("click", () => {
+          sessionState.approvedReviews.add(btn.dataset.id);
+          renderReview();
+          renderOverview();
+          if (sessionState.activeView === "pipeline") renderPipeline();
+        });
+      });
+      $$("[data-action=reject]", host).forEach((btn) => {
+        btn.addEventListener("click", () => {
+          alert("Request changes đã ghi nhận (mock). Item vẫn trong queue.");
+        });
+      });
+    }
+
+    function getSpecOptions() {
+      if (sessionState.projectMode === "migration") {
+        return [
+          { id: "cobol_specs_v1", label: "Cobol Specs v1" },
+          { id: "java_specs_base", label: "Java Specs (Base)" },
+          { id: "java_specs_100", label: "Java Specs 1.0.0" },
+          { id: "java_specs_110", label: "Java Specs 1.1.0" },
+        ];
+      }
+      return [
+        { id: "cobol_specs_v1", label: "Cobol Specs v1" },
+        { id: "java_specs_scratch", label: "Java Specs (draft)" },
+      ];
+    }
+
+    function renderSpecDiff() {
+      const opts = getSpecOptions();
+      const leftSel = $("#diffLeft");
+      const rightSel = $("#diffRight");
+      leftSel.innerHTML = opts.map((o) => `<option value="${o.id}"${sessionState.diffPair.left === o.id ? " selected" : ""}>${o.label}</option>`).join("");
+      rightSel.innerHTML = opts.map((o) => `<option value="${o.id}"${sessionState.diffPair.right === o.id ? " selected" : ""}>${o.label}</option>`).join("");
+      applySpecDiff();
+    }
+
+    function applySpecDiff() {
+      const left = $("#diffLeft").value;
+      const right = $("#diffRight").value;
+      sessionState.diffPair = { left, right };
+      const key = `${left}__${right}`;
+      const reverseKey = `${right}__${left}`;
+      let lines = MOCK.specDiffs[key];
+      if (!lines && left === right) {
+        $("#diffOutput").innerHTML = `<p class="empty-hint">Chọn hai version khác nhau để so sánh.</p>`;
+        return;
+      }
+      if (!lines) {
+        $("#diffOutput").innerHTML = `<p class="empty-hint">Không có diff mock cho cặp này. Thử: Cobol Specs v1 → Java Specs (Base), hoặc Java Specs 1.0.0 → 1.1.0.</p>`;
+        return;
+      }
+      $("#diffOutput").innerHTML = `
+        <p style="font-size:0.78rem;color:var(--muted);margin:0 0 0.5rem">${MOCK.specs[left]?.label || left} → ${MOCK.specs[right]?.label || right}</p>
+        <div class="diff-block">${lines.map((l) => `<div class="diff-line ${l.type}">${l.text.replace(/</g, "&lt;")}</div>`).join("")}</div>`;
+    }
+
+    function setProjectMode(mode) {
+      sessionState.projectMode = mode;
+      sessionState.selectedArtifact = null;
+      sessionState.highlightNodes = null;
+      sessionState.diffPair = mode === "migration"
+        ? { left: "java_specs_100", right: "java_specs_110" }
+        : { left: "cobol_specs_v1", right: "java_specs_scratch" };
+      $$(".mode-toggle button").forEach((b) => {
+        b.classList.toggle("active", b.dataset.mode === mode);
+      });
+      populateSourceFilter();
+      renderOverview();
+      if (sessionState.activeView === "pipeline") renderPipeline();
+      if (sessionState.activeView === "artifacts") renderArtifacts();
+      if (sessionState.activeView === "backlog") renderBacklog();
+      if (sessionState.activeView === "specdiff") renderSpecDiff();
+    }
+
+    function init() {
+      $$(".nav-tabs button").forEach((btn) => {
+        btn.addEventListener("click", () => switchView(btn.dataset.view));
+      });
+
+      $$(".mode-toggle button").forEach((btn) => {
+        btn.addEventListener("click", () => setProjectMode(btn.dataset.mode));
+      });
+
+      $("#backlogSearch").addEventListener("input", renderBacklog);
+      $("#backlogStatusFilter").addEventListener("change", renderBacklog);
+      $("#backlogSourceFilter").addEventListener("change", () => {
+        sessionState.highlightNodes = null;
+        const src = $("#backlogSourceFilter").value;
+        if (src) {
+          const item = getBacklog().find((b) => b.source === src);
+          if (item && item.highlightNodes) sessionState.highlightNodes = item.highlightNodes;
+        }
+        renderBacklog();
+        if (sessionState.activeView === "pipeline") renderPipeline();
+      });
+
+      $("#diffApply").addEventListener("click", applySpecDiff);
+      $("#drawerClose").addEventListener("click", closeDrawer);
+      $("#drawerOverlay").addEventListener("click", closeDrawer);
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") closeDrawer();
+      });
+
+      populateSourceFilter();
+      renderOverview();
+    }
+
+    init();
+  </script>
+</body>
+</html>
